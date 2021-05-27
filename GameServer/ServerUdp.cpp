@@ -303,7 +303,7 @@ void ServerUdp::receive()
 		{
 			clients[peerAdress->port]->clientInfo->AFK_Timer = 0;
 			clients[peerAdress->port]->clientInfo->afk = false;
-			std::cout << "PING" << std::endl;
+			//std::cout << "PING" << std::endl;
 			break;
 		}
 		case (int)Head::MOVE:
@@ -322,40 +322,42 @@ void ServerUdp::receive()
 		{
 			//Sacamos el id del paquete ACK
 			//De momento no lo hacemos, se tendria que enviar el id del mns des del client
-			/*int id;
-			packet >> id;*/
+			int id;
+			packet >> id;
+			std::cout << "Recibo ACK con ID: " << id << std::endl;
+			mapMsgNonAck.erase(id);
 
-			for (auto it = mapMsgNonAck.begin(); it != mapMsgNonAck.end(); it++)
-			{
+			//for (auto it = mapMsgNonAck.begin(); it != mapMsgNonAck.end(); it++)
+			//{
 
-				if ((*it).second->peer->port == peerAdress->port) {
+			//	if ((*it).second->peer->port == peerAdress->port) {
 
-					std::cout << "Borro el paquete de la lista" << std::endl;
-					//Borrar del map el paquete confirmado
-					mapMsgNonAck.erase(it);
-					break;
+			//		std::cout << "Borro el paquete de la lista" << std::endl;
+			//		//Borrar del map el paquete confirmado
+			//		mapMsgNonAck.erase(it);
+			//		break;
 
-				}
-				//if ((*it).first->port == peerAdress->port)
-				//{
-				//
-				//	//Pot ser que un mateix PeerAdress tingui varios paquets en la llista de critics??
-				//	/*int aux;
-				//	(*it).second >> aux;
-				//	if (aux = _head)
-				//	{
+			//	}
+			//	//if ((*it).first->port == peerAdress->port)
+			//	//{
+			//	//
+			//	//	//Pot ser que un mateix PeerAdress tingui varios paquets en la llista de critics??
+			//	//	/*int aux;
+			//	//	(*it).second >> aux;
+			//	//	if (aux = _head)
+			//	//	{
 
-				//	}*/
-				//	//Comprueba si es el paquete que toca
-				//	//Borrar de la lista el paquete confirmado
-				//	if ((*it).first->localPacketID == peerAdress->localPacketID) 
-				//	{
-				//		listMsgNonAck.erase(it);
-				//	}
-				//	
-				//	break;
-				//}
-			}
+			//	//	}*/
+			//	//	//Comprueba si es el paquete que toca
+			//	//	//Borrar de la lista el paquete confirmado
+			//	//	if ((*it).first->localPacketID == peerAdress->localPacketID) 
+			//	//	{
+			//	//		listMsgNonAck.erase(it);
+			//	//	}
+			//	//	
+			//	//	break;
+			//	//}
+			//}
 			break;
 		}
 		case (int)Head::DISCONNECTION:
@@ -399,11 +401,12 @@ void ServerUdp::MatchMaking()
 									packet << Head::PLAYER_JOINED;
 									packet << (*it).second->clientInfo->salt.d;
 									//Passar-li en el packet la client info que necessitin
-									packet << (*_it).second->clientInfo->name << (*_it).second->clientInfo->id << (*_it).second->clientInfo->pos.x << (*_it).second->clientInfo->pos.y;
-
+									packet << crtkPkId << (*_it).second->clientInfo->name << (*_it).second->clientInfo->id << (*_it).second->clientInfo->pos.x << (*_it).second->clientInfo->pos.y;
+									std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
 
 									//Se envia como paquete critico
-									mapMsgNonAck[(*it).second->clientInfo->id] = new PacketCritics((*it).second->peerAdress, packet);
+									mapMsgNonAck[crtkPkId] = new PacketCritics((*it).second->peerAdress, packet);
+									crtkPkId++;
 									//send(packet, (*it).second->peerAdress->ip, (*it).second->peerAdress->port, socket);
 									(*it).second->clientInfo->inMatchmaking = false;
 									(*it).second->clientInfo->inLobby = true;
@@ -413,12 +416,13 @@ void ServerUdp::MatchMaking()
 									sf::Packet packet2;
 									packet2 << Head::PLAYER_JOINED;
 									packet2 << (*_it).second->clientInfo->salt.d;
-									packet2 << (*it).second->clientInfo->name << (*it).second->clientInfo->id << (*it).second->clientInfo->pos.x << (*it).second->clientInfo->pos.y;
+									packet2 << crtkPkId << (*it).second->clientInfo->name << (*it).second->clientInfo->id << (*it).second->clientInfo->pos.x << (*it).second->clientInfo->pos.y;
 									//Passar-li en el packet la client info que necessitin
-
+									std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
 
 									//Se envia como paquete critico
-									mapMsgNonAck[(*_it).second->clientInfo->id] = new PacketCritics((*_it).second->peerAdress, packet2);
+									mapMsgNonAck[crtkPkId] = new PacketCritics((*_it).second->peerAdress, packet2);
+									crtkPkId++;
 									//send(packet2, (*_it).second->peerAdress->ip, (*_it).second->peerAdress->port, socket);
 									(*_it).second->clientInfo->inMatchmaking = false;
 									(*_it).second->clientInfo->inLobby = true;

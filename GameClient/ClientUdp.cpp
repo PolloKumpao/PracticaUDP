@@ -32,7 +32,7 @@ void ClientUdp::send(sf::Packet packet)
 	{
 		std::cout << "Error al enviar\n";
 	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 void ClientUdp::sendPING()
@@ -43,7 +43,7 @@ void ClientUdp::sendPING()
 
 		sf::Packet ping;
 		ping << Head::PING << clientInfo->salt.d;
-		std::cout << "PING" << std::endl;
+		//std::cout << "PING" << std::endl;
 		send(ping);
 
 	}
@@ -183,16 +183,17 @@ void ClientUdp::receive()
 			}
 			case (int)Head::PLAYER_JOINED:
 			{
-				//Estre paquete es critico
+				//Este paquete es critico
 				std::cout << "Player found" << std::endl;
-				
-
+				int id;
+				packet >> id;
 				//Falta poner a 0 esta variable cuando acabes la partida con el otro player
+				std::cout << "Recibido paquete critico con ID: " << id << std::endl;
 				contadorMns++;
 
 
-				if (contadorMns == 1) 
-				{
+				//if (contadorMns == 1) 
+				//{
 					//Constructor de el otro player
 					clientInfo->otherPlayer = new ClientInfo();
 					packet >> clientInfo->otherPlayer->name;
@@ -208,11 +209,12 @@ void ClientUdp::receive()
 					//otherPlayerMoves.detach();
 
 					//Jugar vs el otro
-				}
+				//}
 
 				sf::Packet _packet;
-				_packet << Head::ACK;
-				_packet << clientInfo->salt.d;
+				_packet << Head::ACK ;
+				_packet << clientInfo->salt.d 
+						<< id;
 				send(_packet);
 				break;
 			}
@@ -240,7 +242,7 @@ void ClientUdp::sendCommands()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		if (playerMoved)
 		{
-			std::cout << "El player se movio weon\n";
+		//	std::cout << "El player se movio weon\n";
 			accumPacket << Head::MOVE << clientInfo->salt.d << clientInfo->id << counter << clientInfo->pos.x << clientInfo->pos.y;
 
 			send(accumPacket);

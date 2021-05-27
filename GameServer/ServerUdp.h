@@ -159,6 +159,7 @@ public:
 
 	//THREAD
 	int paquete;
+	int crtkPkId = 0;
 	std::thread paquetesCriticos;
 	void TratamientoPaquetesCriticos();
 
