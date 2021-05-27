@@ -54,9 +54,7 @@ void Graphics::DrawDungeon()
 			{
 			case sf::Event::Closed:
 			{
-				sf::Packet packet;
-				packet << ClientUdp::Head::DISCONNECTION;
-				clientUdp->send(packet);
+				
 
 
 				_window.close();
@@ -66,6 +64,10 @@ void Graphics::DrawDungeon()
 			{
 				if (event.key.code == sf::Keyboard::Escape)
 				{
+					sf::Packet packet;
+					packet << ClientUdp::Head::DISCONNECTION;
+					clientUdp->send(packet);
+
 					_window.close();
 				}
 

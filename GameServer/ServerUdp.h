@@ -16,15 +16,16 @@ public:
 	sf::Vector2f pos;
 
 	int inLobbyCounter = 0;
-
+	int AFK_Timer = 0;
 	std::string name;
 	bool inMatchmaking;
 	bool inLobby;
-
+	bool afk;
 	//Other info
 	ClientInfo() 
 	{
 		inMatchmaking = false;
+		afk = false;
 	}
 
 	ClientInfo(int _id, sf::Vector2f _pos)
@@ -32,6 +33,7 @@ public:
 		id = _id;
 		pos = _pos;
 		inMatchmaking = false;
+		afk = false;
 	}
 
 	void UpdatePos(float x, float y)
@@ -145,6 +147,7 @@ public:
 	std::list<Movement*> movements;
 
 	std::thread matchMakingThread;
+	std::thread AFKthread;
 
 	//=======================MARC===================================
 
@@ -169,7 +172,7 @@ public:
 
 
 	enum Head {
-		MOVE, HELLO, WELCOME, CHALLENGE, PLAY, PLAYER_JOINED, END_MATCHMAKE, ACK, DISCONNECTION, END_LOBBY
+		MOVE, HELLO, WELCOME, CHALLENGE, PLAY, PLAYER_JOINED, END_MATCHMAKE, ACK, DISCONNECTION, END_LOBBY, PING
 	};
 
 	ServerUdp();
@@ -179,6 +182,7 @@ public:
 	void joinCommands();
 	static float GetRandomFloat();
 	void MatchMaking();
+	void AFKController();
 	bool DistanceFuncion(std::string n1, std::string n2);
 	void LobbyTimer(AllClientInfo* c1, AllClientInfo* c2);
 	~ServerUdp();

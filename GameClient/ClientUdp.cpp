@@ -35,6 +35,19 @@ void ClientUdp::send(sf::Packet packet)
 	std::cout << std::endl;
 }
 
+void ClientUdp::sendPING()
+{
+	while (true)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+		sf::Packet ping;
+		ping << Head::PING << clientInfo->salt.d;
+		std::cout << "PING" << std::endl;
+		send(ping);
+
+	}
+}
 
 void ClientUdp::receive()
 {
@@ -133,6 +146,8 @@ void ClientUdp::receive()
 				*/
 				commandsThread = std::thread(&ClientUdp::sendCommands, this);
 				commandsThread.detach();
+				std::thread PINGthread = std::thread(&ClientUdp::sendPING, this);
+				PINGthread.detach();
 
 				running = true;
 				break;
@@ -225,6 +240,7 @@ void ClientUdp::sendCommands()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		if (playerMoved)
 		{
+			std::cout << "El player se movio weon\n";
 			accumPacket << Head::MOVE << clientInfo->salt.d << clientInfo->id << counter << clientInfo->pos.x << clientInfo->pos.y;
 
 			send(accumPacket);

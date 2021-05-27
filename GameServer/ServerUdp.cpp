@@ -27,7 +27,8 @@ ServerUdp::ServerUdp()
 	paquetesCriticos = std::thread(&ServerUdp::TratamientoPaquetesCriticos, this);
 	paquetesCriticos.detach();
 	matchMakingThread = std::thread(&ServerUdp::MatchMaking, this);
-	matchMakingThread.detach();
+	matchMakingThread.detach(); //Hay que hacer detach?
+	AFKthread = std::thread(&ServerUdp::AFKController, this);
 	paquete = 0;
 
 	//==========================================================
@@ -35,7 +36,34 @@ ServerUdp::ServerUdp()
 	std::cout << "Esperando conexiones..." << std::endl;
 	receive();
 }
+void ServerUdp::AFKController()
+{
+	while (true)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		//auto ot = clients.begin();
+		for (auto it = clients.begin(); it != clients.end(); it++)
+		{
+			(*it).second->clientInfo->AFK_Timer++;
+			if ((*it).second->clientInfo->AFK_Timer == 5)
+			{
+				(*it).second->clientInfo->afk = true;
+				clients.erase((*it).second->peerAdress->port);
+				std::cout << "Jugador desconectado por inactividad" << std::endl;
+				//ot = it;
+				break;
+			}
 
+		}
+		/*if ((*ot).second->clientInfo->afk)
+		{
+			clients.erase((*ot).second->peerAdress->port);
+			std::cout << "Jugador desconectado por inactividad" << std::endl;
+		}*/
+
+	}
+	
+}
 void ServerUdp::TratamientoPaquetesCriticos()
 {
 	while (true)
@@ -271,6 +299,12 @@ void ServerUdp::receive()
 		{
 			clients[peerAdress->port]->clientInfo->inMatchmaking = false;
 			break;
+		}case (int)Head::PING:
+		{
+			clients[peerAdress->port]->clientInfo->AFK_Timer = 0;
+			clients[peerAdress->port]->clientInfo->afk = false;
+			std::cout << "PING" << std::endl;
+			break;
 		}
 		case (int)Head::MOVE:
 		{
@@ -278,6 +312,7 @@ void ServerUdp::receive()
 			float x, y;
 			packet >> id >> counter >> x >> y;
 			//encolar comando a lista de comandos
+			/*std::cout << "Se movio:" << std::endl;*/
 			std::cout << "x " << x << "   y " << y << std::endl;
 
 			movements.push_back(new Movement(id, counter, sf::Vector2f(x, y), peerAdress->port, peerAdress->ip));
@@ -327,6 +362,7 @@ void ServerUdp::receive()
 		{
 			//clients[]
 			clients.erase(peerAdress->port);
+			std::cout << "Un jugador se ha desconectado" << std::endl;
 
 			break;
 		}

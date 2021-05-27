@@ -99,13 +99,13 @@ public:
 
 	int head;
 	enum Head {
-		MOVE, HELLO, WELCOME, CHALLENGE, PLAY, PLAYER_JOINED, END_MATCHMAKE, ACK, DISCONNECTION, END_LOBBY
+		MOVE, HELLO, WELCOME, CHALLENGE, PLAY, PLAYER_JOINED, END_MATCHMAKE, ACK, DISCONNECTION, END_LOBBY, PING
 	};
 
 	ClientUdp();
 	void send(sf::Packet packet);
 	void sendCommands();
-
+	void sendPING();
 	void lerpPos();
 	void receive();
 	static float GetRandomFloat();
