@@ -27,6 +27,7 @@ public:
 	bool inLobby;
 	
 	bool newPlayerArrived;
+	std::map <int, ClientInfo*>otherPlayers;
 	ClientInfo* otherPlayer;
 
 	//Other info

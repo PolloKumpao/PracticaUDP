@@ -167,17 +167,31 @@ void ClientUdp::receive()
 				
 				if (clientInfo->otherPlayer != nullptr)
 				{
-					if (id == clientInfo->otherPlayer->id && badMove)
+					for (auto it = clientInfo->otherPlayers.begin(); it != clientInfo->otherPlayers.end(); it++)
 					{
-						clientInfo->otherPlayer->UpdatePos(x, y);
-					}
+						if (id == (*it).second->id && badMove)
+						{
+							(*it).second->UpdatePos(x, y);
+						}
 
-					else if (id == clientInfo->otherPlayer->id && !badMove)
-					{
-						//falta interpolar entre x i y de otherPlayer amb x i y rebudes
-						//clientInfo->otherPlayer->finalPos = sf::Vector2f(x, y);
-						clientInfo->otherPlayer->UpdatePos(x, y);
+						else if (id == (*it).second->id && !badMove)
+						{
+							//falta interpolar entre x i y de otherPlayer amb x i y rebudes
+							//clientInfo->otherPlayer->finalPos = sf::Vector2f(x, y);
+							(*it).second->UpdatePos(x, y);
+						}
 					}
+					//if (id == clientInfo->otherPlayer->id && badMove)
+					//{
+					//	clientInfo->otherPlayer->UpdatePos(x, y);
+					//}
+
+					//else if (id == clientInfo->otherPlayer->id && !badMove)
+					//{
+					//	//falta interpolar entre x i y de otherPlayer amb x i y rebudes
+					//	//clientInfo->otherPlayer->finalPos = sf::Vector2f(x, y);
+					//	clientInfo->otherPlayer->UpdatePos(x, y);
+					//}
 				}
 				break;
 			}
@@ -200,6 +214,8 @@ void ClientUdp::receive()
 					packet >> clientInfo->otherPlayer->id;
 					packet >> clientInfo->otherPlayer->pos.x;
 					packet >> clientInfo->otherPlayer->pos.y;
+
+					clientInfo->otherPlayers.insert(std::pair<int, ClientInfo*>(clientInfo->otherPlayer->id, clientInfo->otherPlayer));
 
 					clientInfo->newPlayerArrived = true;
 					clientInfo->inMatchmake = false;

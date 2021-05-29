@@ -138,11 +138,11 @@ public:
 
 	//std::unordered_map<unsigned short, ClientInfo*> clients;
 	std::unordered_map<unsigned short, AllClientInfo*> clients;
-	//std::unordered_map<unsigned short, AllClientInfo*> matchMakingPlayers;
+	std::unordered_map<std::string, std::list<AllClientInfo*>> matchMakingRooms;
 
 	////////////
 
-	//std::list<std::list<std::pair<PeerAdress*, ClientInfo*>>> matchMakingRooms;
+	//std::list<std::list<std::pair<PeerAdress*, AllClientInfo*>>> matchMakingRooms;
 
 	std::list<Movement*> movements;
 

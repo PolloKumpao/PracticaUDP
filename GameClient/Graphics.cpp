@@ -30,7 +30,7 @@ void Graphics::DrawDungeon()
 			clientUdp->clientInfo->newPlayerArrived = false;
 		}
 
-		//std::cout << "In Lobbo: " << clientUdp->clientInfo->inLobby << "  gogo" << std::endl;
+		//std::cout << "In Lobby: " << clientUdp->clientInfo->inLobby << "  gogo" << std::endl;
 		if (clientUdp->clientInfo->inLobby)
 		{
 			otherPlayer.origen.x = clientUdp->clientInfo->otherPlayer->pos.x;
@@ -166,8 +166,21 @@ void Graphics::DrawDungeon()
 
 		player.Draw(_window);
 
-		if(clientUdp->clientInfo->inLobby)
-			otherPlayer.Draw(_window);
+		if (clientUdp->clientInfo->inLobby)
+		{
+			for (auto it = clientUdp->clientInfo->otherPlayers.begin() ; it != clientUdp->clientInfo->otherPlayers.end(); it++)
+			{
+				otherPlayer = Sala((*it).second->name,
+					(*it).second->pos.x,
+					(*it).second->pos.y,
+					1, 1, sf::Color(150, 0, 0, 255));
+
+				otherPlayer.origen.x = (*it).second->pos.x;
+				otherPlayer.origen.y = (*it).second->pos.y;
+				otherPlayer.Draw(_window);
+			}
+		}
+			
 			
 
 		_window.display();

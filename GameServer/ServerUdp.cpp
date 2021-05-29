@@ -386,52 +386,94 @@ void ServerUdp::MatchMaking()
 			{
 				if ((*it).second->clientInfo->inMatchmaking)
 				{
-					for (auto _it = clients.begin(); _it != clients.end(); _it++)
+					if (matchMakingRooms.size() == 0)
 					{
-						if (it != _it)
+						matchMakingRooms[(*it).second->clientInfo->name].push_back((*it).second);
+						(*it).second->clientInfo->inMatchmaking = false;
+						(*it).second->clientInfo->inLobby = true;
+					}
+					else
+					{
+						for (auto room = matchMakingRooms.begin(); room != matchMakingRooms.end(); room++)
 						{
-							if ((*_it).second->clientInfo->inMatchmaking )
-							{
-								if (DistanceFuncion((*it).second->clientInfo->name, (*_it).second->clientInfo->name))
+								if ((*it).second->clientInfo->inMatchmaking)
 								{
-									//He juntat 2 jugadors
+									if (DistanceFuncion((*it).second->clientInfo->name, (*room).first))
+									{
+										(*room).second.push_back((*it).second);
+										(*it).second->clientInfo->inMatchmaking = false;
+										(*it).second->clientInfo->inLobby = true;
+										//Hemos añadido el cliente al lobby y procedemos a enviar la info correspondiente
+										for (auto clienteInLobby = (*room).second.begin(); clienteInLobby != (*room).second.end(); clienteInLobby++)
+										{
+											if ((*clienteInLobby)->clientInfo->id != (*it).second->clientInfo->id)
+											{
+												//Enviamos al nuevo jugador la info de los nuevos jugadores
+												sf::Packet packet;
+												packet << Head::PLAYER_JOINED;
+												packet << (*it).second->clientInfo->salt.d;
+												//Passar-li en el packet la client info que necessitin
+												packet << crtkPkId << (*clienteInLobby)->clientInfo->name << (*clienteInLobby)->clientInfo->id << (*clienteInLobby)->clientInfo->pos.x << (*clienteInLobby)->clientInfo->pos.y;
+												std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
+												//Se envia como paquete critico
+												mapMsgNonAck[crtkPkId] = new PacketCritics((*it).second->peerAdress, packet);
+												crtkPkId++;
 
-									//Player 1 join
-									sf::Packet packet;
-									packet << Head::PLAYER_JOINED;
-									packet << (*it).second->clientInfo->salt.d;
-									//Passar-li en el packet la client info que necessitin
-									packet << crtkPkId << (*_it).second->clientInfo->name << (*_it).second->clientInfo->id << (*_it).second->clientInfo->pos.x << (*_it).second->clientInfo->pos.y;
-									std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
+												//Enviamos a los jugadores de la sala la info del nuevo jugador
+												sf::Packet packet2;
+												packet2 << Head::PLAYER_JOINED;
+												packet2 << (*clienteInLobby)->clientInfo->salt.d;
+												//Passar-li en el packet la client info que necessitin
+												packet2 << crtkPkId << (*it).second->clientInfo->name << (*it).second->clientInfo->id << (*it).second->clientInfo->pos.x << (*it).second->clientInfo->pos.y;
+												std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
+												//Se envia como paquete critico
+												mapMsgNonAck[crtkPkId] = new PacketCritics((*clienteInLobby)->peerAdress, packet2);
+												crtkPkId++;
 
-									//Se envia como paquete critico
-									mapMsgNonAck[crtkPkId] = new PacketCritics((*it).second->peerAdress, packet);
-									crtkPkId++;
-									//send(packet, (*it).second->peerAdress->ip, (*it).second->peerAdress->port, socket);
-									(*it).second->clientInfo->inMatchmaking = false;
-									(*it).second->clientInfo->inLobby = true;
+											}
+											std::thread threadLobbyTimer = std::thread(&ServerUdp::LobbyTimer, this, (*clienteInLobby), (*it).second);
+											threadLobbyTimer.detach();
+										}
+										////Player 1 join
+										//sf::Packet packet;
+										//packet << Head::PLAYER_JOINED;
+										//packet << (*it).second->clientInfo->salt.d;
+										////Passar-li en el packet la client info que necessitin
+										//packet << crtkPkId << (*room).second->clientInfo->name << (*room).second->clientInfo->id << (*room).second->clientInfo->pos.x << (*room).second->clientInfo->pos.y;
+										//std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
+
+										////Se envia como paquete critico
+										//mapMsgNonAck[crtkPkId] = new PacketCritics((*it).second->peerAdress, packet);
+										//crtkPkId++;
+										////send(packet, (*it).second->peerAdress->ip, (*it).second->peerAdress->port, socket);
+										//(*it).second->clientInfo->inMatchmaking = false;
+										//(*it).second->clientInfo->inLobby = true;
 
 
-									//Player 2 join
-									sf::Packet packet2;
-									packet2 << Head::PLAYER_JOINED;
-									packet2 << (*_it).second->clientInfo->salt.d;
-									packet2 << crtkPkId << (*it).second->clientInfo->name << (*it).second->clientInfo->id << (*it).second->clientInfo->pos.x << (*it).second->clientInfo->pos.y;
-									//Passar-li en el packet la client info que necessitin
-									std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
+										////Player 2 join
+										//sf::Packet packet2;
+										//packet2 << Head::PLAYER_JOINED;
+										//packet2 << (*room).second->clientInfo->salt.d;
+										//packet2 << crtkPkId << (*it).second->clientInfo->name << (*it).second->clientInfo->id << (*it).second->clientInfo->pos.x << (*it).second->clientInfo->pos.y;
+										////Passar-li en el packet la client info que necessitin
+										//std::cout << "Envio paquete critico con ID: " << crtkPkId << std::endl;
 
-									//Se envia como paquete critico
-									mapMsgNonAck[crtkPkId] = new PacketCritics((*_it).second->peerAdress, packet2);
-									crtkPkId++;
-									//send(packet2, (*_it).second->peerAdress->ip, (*_it).second->peerAdress->port, socket);
-									(*_it).second->clientInfo->inMatchmaking = false;
-									(*_it).second->clientInfo->inLobby = true;
+										////Se envia como paquete critico
+										//mapMsgNonAck[crtkPkId] = new PacketCritics((*room).second->peerAdress, packet2);
+										//crtkPkId++;
+										////send(packet2, (*_it).second->peerAdress->ip, (*_it).second->peerAdress->port, socket);
+										//(*room).second->clientInfo->inMatchmaking = false;
+										//(*room).second->clientInfo->inLobby = true;
 
-									std::thread threadLobbyTimer = std::thread(&ServerUdp::LobbyTimer, this, (*_it).second, (*it).second);
-									threadLobbyTimer.detach();
-
+									}
 								}
-							}
+		
+						}
+						if ((*it).second->clientInfo->inMatchmaking)
+						{
+							matchMakingRooms[(*it).second->clientInfo->name].push_back((*it).second);
+							(*it).second->clientInfo->inMatchmaking = false;
+							(*it).second->clientInfo->inLobby = true;
 						}
 					}
 				}
