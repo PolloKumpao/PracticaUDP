@@ -21,7 +21,7 @@ ServerUdp::ServerUdp()
 	commandsThread = std::thread(&ServerUdp::updatePositions, this);
 	commandsThread.detach();
 
-	//========================NEW===============================
+
 	//Paquetes criticos
 
 	paquetesCriticos = std::thread(&ServerUdp::TratamientoPaquetesCriticos, this);
@@ -31,11 +31,11 @@ ServerUdp::ServerUdp()
 	AFKthread = std::thread(&ServerUdp::AFKController, this);
 	paquete = 0;
 
-	//==========================================================
 
 	std::cout << "Esperando conexiones..." << std::endl;
 	receive();
 }
+//controlamos si hay jugador afk durante un periodo de tiempo y lo desconectamos por inactividad
 void ServerUdp::AFKController()
 {
 	while (true)
@@ -55,11 +55,7 @@ void ServerUdp::AFKController()
 			}
 
 		}
-		/*if ((*ot).second->clientInfo->afk)
-		{
-			clients.erase((*ot).second->peerAdress->port);
-			std::cout << "Jugador desconectado por inactividad" << std::endl;
-		}*/
+	
 
 	}
 	
@@ -303,7 +299,6 @@ void ServerUdp::receive()
 		{
 			clients[peerAdress->port]->clientInfo->AFK_Timer = 0;
 			clients[peerAdress->port]->clientInfo->afk = false;
-			//std::cout << "PING" << std::endl;
 			break;
 		}
 		case (int)Head::MOVE:
@@ -511,18 +506,18 @@ void ServerUdp::updatePositions()
 		for (auto it = movementIDOrder.begin(); it != movementIDOrder.end(); ++it)
 		{
 			badMove = false;
-			//Controlar limitacions de pantalla
+			
 			if (it->second->position.x < 0)
 			{
 				badMove = true;
-			//	it->second->position.x = 0;
+		
 				it->second->position.x = 0;
 
 			}
 
 			else if (it->second->position.x > 39)
 			{
-			//	it->second->position.x = 25;
+			
 				it->second->position.x = 39;
 
 				badMove = true;
@@ -531,7 +526,7 @@ void ServerUdp::updatePositions()
 			else if (it->second->position.y < 0)
 			{
 				badMove = true;
-				//it->second->position.y = 0;
+				
 				it->second->position.y = 0;
 
 			}
@@ -539,7 +534,7 @@ void ServerUdp::updatePositions()
 			else if (it->second->position.y > 29)
 			{
 				badMove = true;
-				//it->second->position.y = 17;
+		
 				it->second->position.y = 29;
 
 			}
@@ -557,7 +552,7 @@ void ServerUdp::updatePositions()
 				p << (*it).second->position.x;
 				p << (*it).second->position.y;
 
-				//nomes enviant correccio al client que corretgeix hauria de ser suficient
+				//solo enviando correcion al cliente que corrije tendria que ser suficiente
 				send(p, (*it).second->ip, (*it).second->port, socket);
 				/*for (auto _it = clients.begin(); _it != clients.end(); ++_it)
 				{

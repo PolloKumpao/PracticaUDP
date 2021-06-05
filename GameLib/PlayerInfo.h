@@ -7,7 +7,6 @@ class PlayerInfo
 {
 
 public:
-	const int numCards = 21;
 
 	std::string name;
 	sf::Vector2i position;
